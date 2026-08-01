@@ -251,13 +251,16 @@ export default function PersonDetailPage() {
                 .slice()
                 .sort((a, b) => b.date.localeCompare(a.date))
                 .map((e, i, arr) => (
-                  <div key={e.id} className="group">
-                    <TimelineItem event={{ ...e, personId: person.id, personName: person.name, avatar: person.avatar }} last={i === arr.length - 1} />
+                  <div key={e.id} className="group flex items-start gap-2">
+                    <div className="min-w-0 flex-1">
+                      <TimelineItem event={{ ...e, personId: person.id, personName: person.name, avatar: person.avatar }} last={i === arr.length - 1} />
+                    </div>
                     <button
                       onClick={() => removeTimelineEvent(person.id, e.id)}
-                      className="ml-8 mt-1 hidden text-[11px] text-text-muted group-hover:block"
+                      aria-label={`Remove memory: ${e.title}`}
+                      className="mt-1 rounded-full p-2 text-text-muted transition-colors hover:bg-card-soft hover:text-[#B5654A]"
                     >
-                      remove
+                      <Trash2 size={15} />
                     </button>
                   </div>
                 ))}

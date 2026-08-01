@@ -146,15 +146,6 @@ export const usePeopleStore = create<PeopleState>()(
                   ...p,
                   lastInteraction: when ?? new Date().toISOString(),
                   followUp: false,
-                  timeline: [
-                    ...p.timeline,
-                    {
-                      id: uid("e"),
-                      title: "Reached out",
-                      date: when ?? new Date().toISOString(),
-                      kind: "note" as const,
-                    },
-                  ].sort((a, b) => a.date.localeCompare(b.date)),
                   updatedAt: new Date().toISOString(),
                 }
               : p
