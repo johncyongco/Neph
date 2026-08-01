@@ -2,13 +2,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   User,
-  Archive,
   Download,
   Bell,
   Moon,
   Info,
   Trash2,
-  Check,
 } from "lucide-react";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -21,7 +19,6 @@ export default function MorePage() {
   const navigate = useNavigate();
   const people = usePeopleStore((s) => s.people);
   const clearAll = usePeopleStore((s) => s.clearAll);
-  const reseed = usePeopleStore((s) => s.reseed);
   const [dark, setDark] = useState(document.documentElement.classList.contains("dark"));
 
   function toggleDark() {
@@ -30,18 +27,9 @@ export default function MorePage() {
     document.documentElement.classList.toggle("dark", next);
   }
 
-  function exportJson() {
-    const blob = new Blob([JSON.stringify(people, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "neph-journey.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function copyToClipboard() {
-    navigator.clipboard.writeText(JSON.stringify(people, null, 2));
+  async function exportPdf() {
+    const { exportPeoplePdf } = await import("@/services/exportPdf");
+    exportPeoplePdf(people);
   }
 
   function onClear() {
@@ -72,9 +60,7 @@ export default function MorePage() {
         </section>
 
         <Section title="Journey">
-          <Row icon={<Download size={17} />} label="Export journey" sub="Save a JSON copy" onClick={exportJson} />
-          <Row icon={<Check size={17} />} label="Copy to clipboard" sub="Paste anywhere" onClick={copyToClipboard} />
-          <Row icon={<Archive size={17} />} label="Restore seed people" sub="Bring back the examples" onClick={reseed} />
+          <Row icon={<Download size={17} />} label="Export Neph" sub="PDF of contacts & memories" onClick={exportPdf} />
           <Row icon={<Trash2 size={17} />} label="Clear everyone" sub="Empty the book" danger onClick={onClear} />
         </Section>
 
@@ -93,9 +79,6 @@ export default function MorePage() {
             <p className="editorial text-[15px] leading-relaxed">
               Neph is a journal, not a contact book. It remembers the people who became part of your story —
               not the ones you collected.
-            </p>
-            <p className="caption">
-              Built to belong beside Agapetoi and Custody, sharing their quiet design language.
             </p>
           </div>
         </Section>

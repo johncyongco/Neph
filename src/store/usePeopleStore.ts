@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { Person, PrayerIntention, TimelineEvent } from "@/lib/types";
 import { STORAGE_KEY } from "@/lib/constants";
-import { SEED_PEOPLE } from "@/data/seed";
 
 function uid(prefix = "id"): string {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
@@ -23,7 +22,6 @@ interface PeopleState {
   togglePrayFor: (id: string) => void;
   markContacted: (id: string, when?: string) => void;
   clearAll: () => void;
-  reseed: () => void;
 }
 
 export const usePeopleStore = create<PeopleState>()(
@@ -160,7 +158,6 @@ export const usePeopleStore = create<PeopleState>()(
         })),
 
       clearAll: () => set({ people: [] }),
-      reseed: () => set({ people: SEED_PEOPLE }),
     }),
     {
       name: STORAGE_KEY,
