@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { AlertCircle, ArrowLeft, Check, Loader2, Sparkles } from "lucide-react";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { Button, IconButton } from "@/components/ui/Button";
 import { Input, Textarea, Select } from "@/components/ui/Input";
@@ -24,6 +25,8 @@ const AUTH_WALLED = new Set<Platform>([
 export default function AddPersonPage() {
   const navigate = useNavigate();
   const addPerson = usePeopleStore((s) => s.addPerson);
+  const people = usePeopleStore((s) => s.people);
+  const [toast, setToast] = useState<null | "saved" | "duplicate">(null);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [harvest, setHarvest] = useState<HarvestResult | null>(null);
@@ -46,6 +49,12 @@ export default function AddPersonPage() {
 
   const detected = url ? detectPlatform(url) : "unknown";
   const detectedMeta = PLATFORM_META[detected];
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = window.setTimeout(() => setToast(null), 2600);
+    return () => window.clearTimeout(t);
+  }, [toast]);
 
   async function onHarvest() {
     if (!url.trim()) return;
@@ -74,14 +83,29 @@ export default function AddPersonPage() {
 
   function save() {
     if (!name.trim()) return;
+    const trimmedName = name.trim();
     const platform = harvest?.platform ?? detected ?? "unknown";
-    const id = addPerson({
-      name: name.trim(),
+    const profileUrl = url.trim() || harvest?.profileUrl || undefined;
+
+    const isDuplicate = people.some(
+      (p) =>
+        p.name.toLowerCase() === trimmedName.toLowerCase() &&
+        p.platform === platform &&
+        (p.profileUrl ?? "") === (profileUrl ?? "")
+    );
+
+    if (isDuplicate) {
+      setToast("duplicate");
+      return;
+    }
+
+    addPerson({
+      name: trimmedName,
       username: username || undefined,
       avatar: avatar || harvest?.avatar || undefined,
       bio: bio || undefined,
       platform,
-      profileUrl: url || harvest?.profileUrl || undefined,
+      profileUrl,
       website: website || harvest?.website || undefined,
       recentLinks: harvest?.recentLinks ?? [],
       journeyType,
@@ -91,13 +115,14 @@ export default function AddPersonPage() {
       tags,
       prayerIntentions: [],
       timeline: dateMet
-        ? [{ id: "e-init", title: `Met ${name.trim()}`, date: dateMet, kind: "met" }]
+        ? [{ id: "e-init", title: `Met ${trimmedName}`, date: dateMet, kind: "met" }]
         : [],
       photos: [],
       followUp,
       prayFor,
     });
-    navigate(`/people/${id}`);
+    setToast("saved");
+    window.setTimeout(() => navigate("/people"), 900);
   }
 
   return (
@@ -283,12 +308,39 @@ export default function AddPersonPage() {
                 Cancel
               </Button>
               <Button onClick={save} disabled={!name.trim()} className="flex-[2]">
-                Save to journey
+                Save People
               </Button>
             </div>
           </div>
         )}
       </div>
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            key={toast}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
+            className="fixed bottom-[calc(var(--nav-height)+24px)] left-1/2 z-50 -translate-x-1/2"
+            role="status"
+          >
+            <div className="flex items-center gap-2.5 rounded-[20px] bg-text px-4 py-3 text-card shadow-[var(--shadow-lift)]">
+              {toast === "saved" ? (
+                <Check size={16} strokeWidth={2.2} />
+              ) : (
+                <AlertCircle size={16} strokeWidth={2.2} />
+              )}
+              <span className="text-[14px] font-medium whitespace-nowrap">
+                {toast === "saved"
+                  ? "Profile saved"
+                  : "This person is already in your people"}
+              </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </PageTransition>
   );
 }

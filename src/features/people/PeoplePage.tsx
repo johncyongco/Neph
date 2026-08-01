@@ -63,16 +63,24 @@ export default function PeoplePage() {
 
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide -mx-[var(--side-padding)] px-[var(--side-padding)]">
           {quickFilters.map((f) => (
-            <Chip key={f.id} active={quick === f.id} onClick={() => setQuick(f.id)}>
+            <Chip
+              key={f.id}
+              active={quick === f.id}
+              onClick={() => {
+                setQuick(f.id);
+                if (f.id === "all") setTag(null);
+              }}
+            >
               {f.label}
             </Chip>
           ))}
           {allTags.length > 0 && <span className="mx-1 self-center text-divider">·</span>}
-          <Chip active={tag === null} onClick={() => setTag(null)}>
-            All categories
-          </Chip>
           {allTags.map((t) => (
-            <Chip key={t} active={tag === t} onClick={() => setTag(t)}>
+            <Chip
+              key={t}
+              active={tag === t}
+              onClick={() => setTag(tag === t ? null : t)}
+            >
               {t}
             </Chip>
           ))}

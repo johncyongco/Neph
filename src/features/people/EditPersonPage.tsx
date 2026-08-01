@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, X, Plus } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, Check, X, Plus } from "lucide-react";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { IconButton, Button } from "@/components/ui/Button";
 import { Input, Textarea, Select } from "@/components/ui/Input";
@@ -31,6 +32,13 @@ export default function EditPersonPage() {
   const [tagDraft, setTagDraft] = useState("");
   const [followUp, setFollowUp] = useState(person?.followUp ?? false);
   const [prayFor, setPrayFor] = useState(person?.prayFor ?? false);
+  const [toast, setToast] = useState(false);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = window.setTimeout(() => setToast(false), 2600);
+    return () => window.clearTimeout(t);
+  }, [toast]);
 
   if (!person) {
     return (
@@ -62,7 +70,8 @@ export default function EditPersonPage() {
       followUp,
       prayFor,
     });
-    navigate(`/people/${person!.id}`);
+    setToast(true);
+    window.setTimeout(() => navigate(`/people/${person!.id}`), 900);
   }
 
   return (
@@ -130,6 +139,27 @@ export default function EditPersonPage() {
           <Button fullWidth onClick={save}>Save changes</Button>
         </div>
       </div>
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            key="saved"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
+            className="fixed bottom-[calc(var(--nav-height)+24px)] left-1/2 z-50 -translate-x-1/2"
+            role="status"
+          >
+            <div className="flex items-center gap-2.5 rounded-[20px] bg-text px-4 py-3 text-card shadow-[var(--shadow-lift)]">
+              <Check size={16} strokeWidth={2.2} />
+              <span className="text-[14px] font-medium whitespace-nowrap">
+                Changes saved
+              </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </PageTransition>
   );
 }
