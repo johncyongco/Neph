@@ -7,9 +7,13 @@ import {
   Moon,
   Info,
   Trash2,
+  Cross,
+  Plus,
 } from "lucide-react";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { Input } from "@/components/ui/Input";
+import { Button, IconButton } from "@/components/ui/Button";
 import { usePeopleStore } from "@/store/usePeopleStore";
 import { APP_NAME, APP_TAGLINE } from "@/lib/constants";
 import { isSupabaseConfigured } from "@/services/supabase";
@@ -18,8 +22,17 @@ import { cn } from "@/lib/tw";
 export default function MorePage() {
   const navigate = useNavigate();
   const people = usePeopleStore((s) => s.people);
+  const saints = usePeopleStore((s) => s.saints);
+  const addSaint = usePeopleStore((s) => s.addSaint);
+  const removeSaint = usePeopleStore((s) => s.removeSaint);
   const clearAll = usePeopleStore((s) => s.clearAll);
   const [dark, setDark] = useState(document.documentElement.classList.contains("dark"));
+  const [showSaint, setShowSaint] = useState(false);
+  const [saintName, setSaintName] = useState("");
+  const [saintTitle, setSaintTitle] = useState("");
+  const [saintPatron, setSaintPatron] = useState("");
+  const [saintFeast, setSaintFeast] = useState("");
+  const [saintIntercession, setSaintIntercession] = useState("");
 
   function toggleDark() {
     const next = !dark;
@@ -36,6 +49,23 @@ export default function MorePage() {
     if (window.confirm("Remove everyone from your journey? This empties the book.")) {
       clearAll();
     }
+  }
+
+  function saveSaint() {
+    if (!saintName.trim()) return;
+    addSaint({
+      name: saintName.trim(),
+      title: saintTitle.trim() || undefined,
+      patronOf: saintPatron.trim() || undefined,
+      feastDay: saintFeast.trim() || undefined,
+      intercession: saintIntercession.trim() || undefined,
+    });
+    setSaintName("");
+    setSaintTitle("");
+    setSaintPatron("");
+    setSaintFeast("");
+    setSaintIntercession("");
+    setShowSaint(false);
   }
 
   return (
@@ -58,6 +88,47 @@ export default function MorePage() {
             <Stat label="Prayers" value={people.reduce((n, p) => n + p.prayerIntentions.length, 0)} />
           </div>
         </section>
+
+        <Section title="Journey Saints">
+          {saints.length === 0 ? (
+            <p className="caption p-5">The saints who journey with you, kept close.</p>
+          ) : (
+            saints.map((s) => (
+              <div key={s.id} className="flex items-center gap-3 p-4">
+                <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-card-soft text-text-secondary">
+                  <Cross size={16} strokeWidth={1.6} />
+                </span>
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[15px] text-text line-clamp-1">{s.name}</span>
+                    {s.title && <span className="caption line-clamp-1">{s.title}</span>}
+                  </div>
+                  {s.patronOf && <span className="caption line-clamp-1">Patron of {s.patronOf}</span>}
+                  {s.feastDay && <span className="caption line-clamp-1">Feast {s.feastDay}</span>}
+                  {s.intercession && <span className="caption line-clamp-1">Intercession for {s.intercession}</span>}
+                </div>
+                <IconButton label="Remove saint" onClick={() => removeSaint(s.id)}>
+                  <Trash2 size={15} />
+                </IconButton>
+              </div>
+            ))
+          )}
+          {showSaint ? (
+            <div className="flex flex-col gap-3 p-4 anim-fade">
+              <Input label="Name" value={saintName} onChange={(e) => setSaintName(e.target.value)} placeholder="e.g. St. Thérèse of Lisieux" />
+              <Input label="Title" value={saintTitle} onChange={(e) => setSaintTitle(e.target.value)} placeholder="e.g. Doctor of the Church" />
+              <Input label="Patron of" value={saintPatron} onChange={(e) => setSaintPatron(e.target.value)} placeholder="e.g. missions" />
+              <Input label="Feast Day" value={saintFeast} onChange={(e) => setSaintFeast(e.target.value)} placeholder="e.g. October 1" />
+              <Input label="Intercession for" value={saintIntercession} onChange={(e) => setSaintIntercession(e.target.value)} placeholder="e.g. my vocation" />
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={() => setShowSaint(false)}>Cancel</Button>
+                <Button size="sm" onClick={saveSaint} disabled={!saintName.trim()}>Add saint</Button>
+              </div>
+            </div>
+          ) : (
+            <Row icon={<Plus size={17} />} label="Add a saint" sub="Name, patron, feast day" onClick={() => setShowSaint(true)} />
+          )}
+        </Section>
 
         <Section title="Journey">
           <Row icon={<Download size={17} />} label="Export Neph" sub="PDF of contacts & memories" onClick={exportPdf} />

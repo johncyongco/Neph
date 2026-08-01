@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import type { Person, PrayerIntention, TimelineEvent } from "@/lib/types";
+import type { Person, PrayerIntention, Saint, TimelineEvent } from "@/lib/types";
 import { STORAGE_KEY } from "@/lib/constants";
 
 function uid(prefix = "id"): string {
@@ -9,6 +9,7 @@ function uid(prefix = "id"): string {
 
 interface PeopleState {
   people: Person[];
+  saints: Saint[];
   hydrated: boolean;
   addPerson: (p: Omit<Person, "id" | "createdAt" | "updatedAt">) => string;
   updatePerson: (id: string, patch: Partial<Person>) => void;
@@ -22,12 +23,15 @@ interface PeopleState {
   togglePrayFor: (id: string) => void;
   markContacted: (id: string, when?: string) => void;
   clearAll: () => void;
+  addSaint: (s: Omit<Saint, "id" | "createdAt">) => string;
+  removeSaint: (id: string) => void;
 }
 
 export const usePeopleStore = create<PeopleState>()(
   persist(
     (set, get) => ({
       people: [],
+      saints: [],
       hydrated: false,
 
       addPerson: (p) => {
@@ -158,6 +162,20 @@ export const usePeopleStore = create<PeopleState>()(
         })),
 
       clearAll: () => set({ people: [] }),
+
+      addSaint: (s) => {
+        const id = uid("saint");
+        set((state) => ({
+          saints: [
+            ...state.saints,
+            { ...s, id, createdAt: new Date().toISOString() },
+          ],
+        }));
+        return id;
+      },
+
+      removeSaint: (id) =>
+        set((s) => ({ saints: s.saints.filter((st) => st.id !== id) })),
     }),
     {
       name: STORAGE_KEY,

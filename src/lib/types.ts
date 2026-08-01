@@ -75,6 +75,16 @@ export interface Person {
   updatedAt: string;
 }
 
+export interface Saint {
+  id: string;
+  name: string;
+  title?: string;
+  patronOf?: string;
+  feastDay?: string;
+  intercession?: string;
+  createdAt: string;
+}
+
 export interface HarvestResult {
   platform: Platform;
   username?: string;
