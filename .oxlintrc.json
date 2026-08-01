@@ -1,0 +1,9 @@
+{
+  "$schema": "https://oxlint.rs/schema.json",
+  "plugins": ["react", "typescript", "import"],
+  "env": {
+    "browser": true,
+    "es2022": true
+  },
+  "rules": {}
+}

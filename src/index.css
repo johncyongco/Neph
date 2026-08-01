@@ -1,0 +1,530 @@
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/instrument-serif/400.css";
+@import "@fontsource/mulish/400.css";
+@import "@fontsource/mulish/500.css";
+@import "@fontsource/mulish/600.css";
+@import "@fontsource/mulish/700.css";
+@import "tailwindcss";
+
+/* ============================================================
+   NEPH — A Journey Book of People
+   Apple Journal × Notion × Paper × Museum × Classic literature
+   ============================================================ */
+
+:root {
+  /* Canvas */
+  --bg: #F8F4EE;
+  --card: #FFFCF8;
+  --card-soft: #F3EFE8;
+
+  /* Ink */
+  --text: #2E2A26;
+  --text-secondary: #564F48;
+  --text-muted: #807870;
+
+  /* Structure */
+  --divider: #E8E0D5;
+  --border: #ECE5DA;
+
+  /* Journey palette */
+  --green: #788567;
+  --terracotta: #C88A6C;
+  --mustard: #CFB06D;
+  --lake: #8AA8BD;
+
+  /* Contact (prompted actions) */
+  --ink: #2E2A26;
+
+  /* Fonts */
+  --font-heading: "Mulish", system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+
+  /* Layout */
+  --page-width: 720px;
+  --side-padding: 24px;
+  --nav-height: 72px;
+
+  /* 8-point grid (spacing scale) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+
+  /* Radius */
+  --radius-card: 28px;
+  --radius-button: 18px;
+  --radius-search: 22px;
+  --radius-chip: 999px;
+  --radius-avatar: 999px;
+
+  /* Soft shadows only */
+  --shadow-card: 0 12px 32px rgba(0, 0, 0, 0.05);
+  --shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.04);
+  --shadow-lift: 0 18px 40px rgba(0, 0, 0, 0.08);
+
+  /* Motion */
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-card-soft: var(--card-soft);
+  --color-text: var(--text);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-divider: var(--divider);
+  --color-border: var(--border);
+  --color-green: var(--green);
+  --color-terracotta: var(--terracotta);
+  --color-mustard: var(--mustard);
+  --color-lake: var(--lake);
+
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+
+  --radius-card: var(--radius-card);
+  --radius-button: var(--radius-button);
+  --radius-search: var(--radius-search);
+  --radius-chip: var(--radius-chip);
+  --radius-avatar: var(--radius-avatar);
+
+  --shadow-card: var(--shadow-card);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+
+@layer base {
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    width: 100%;
+    overflow-x: hidden;
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar {
+    display: none;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+    min-height: 100dvh;
+    width: 100%;
+    font-size: 16px;
+  }
+
+  #root {
+    min-height: 100dvh;
+    position: relative;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  button {
+    font-family: inherit;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+  }
+
+  input, textarea, select {
+    font-family: inherit;
+    font-size: 16px;
+    color: var(--text);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  ::selection {
+    background: rgba(120, 133, 103, 0.18);
+    color: var(--text);
+  }
+
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--divider);
+    border-radius: 4px;
+  }
+}
+
+/* ============================================================
+   TYPOGRAPHY
+   ============================================================ */
+
+@layer components {
+.font-heading {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.font-body {
+  font-family: var(--font-body);
+}
+
+.text-hero {
+  font-family: var(--font-heading);
+  font-size: clamp(2.5rem, 7vw, 44px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+.text-page {
+  font-family: var(--font-heading);
+  font-size: clamp(1.75rem, 5vw, 32px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.text-section {
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.editorial {
+  font-family: var(--font-body);
+  font-style: italic;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.label {
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.caption {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   PAPER — cards
+   ============================================================ */
+
+.paper {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+.paper-soft {
+  background: var(--card-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+.paper-flat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: var(--radius-button);
+  transition: all 0.2s var(--ease);
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--text);
+  color: var(--card);
+}
+.btn-primary:hover {
+  background: #3A332C;
+}
+.btn-primary:active {
+  transform: scale(0.98);
+}
+.btn-secondary {
+  background: var(--card-soft);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover {
+  background: var(--border);
+}
+.btn-outline {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-outline:hover {
+  background: var(--card-soft);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.btn-ghost:hover {
+  color: var(--text);
+  background: var(--card-soft);
+}
+.btn-danger {
+  background: transparent;
+  color: #B5654A;
+  border: 1px solid rgba(181, 101, 74, 0.25);
+}
+.btn-danger:hover {
+  background: rgba(181, 101, 74, 0.08);
+}
+
+/* ============================================================
+   FORMS
+   ============================================================ */
+
+.field {
+  width: 100%;
+  padding: 14px 18px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-button);
+  font-size: 16px;
+  color: var(--text);
+  transition: border-color 0.2s var(--ease), box-shadow 0.2s var(--ease);
+  outline: none;
+}
+.field::placeholder {
+  color: var(--text-muted);
+}
+.field:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 4px rgba(120, 133, 103, 0.1);
+}
+
+.field-label {
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   CHIPS
+   ============================================================ */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-chip);
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-secondary);
+  transition: all 0.2s var(--ease);
+  white-space: nowrap;
+}
+.chip[data-active="true"] {
+  background: var(--text);
+  color: var(--card);
+  border-color: var(--text);
+}
+
+/* ============================================================
+   DIVIDERS
+   ============================================================ */
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: var(--divider);
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+
+.nav-glass {
+  background: rgba(248, 244, 238, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid var(--divider);
+}
+
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+}
+.safe-top {
+  padding-top: max(env(safe-area-inset-top, 0px), 0px);
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.anim-fade {
+  animation: fadeIn 0.5s var(--ease) forwards;
+  opacity: 0;
+}
+.anim-slide {
+  animation: slideUp 0.6s var(--ease) forwards;
+  opacity: 0;
+}
+.delay-1 { animation-delay: 0.06s; }
+.delay-2 { animation-delay: 0.12s; }
+.delay-3 { animation-delay: 0.18s; }
+.delay-4 { animation-delay: 0.24s; }
+.delay-5 { animation-delay: 0.30s; }
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+} /* end @layer components (part 1) */
+
+/* ============================================================
+   DARK MODE — warm charcoal
+   ============================================================ */
+
+.dark body,
+html.dark body {
+  background: #1C1A17;
+  color: #EDE7DC;
+}
+.dark {
+  --bg: #1C1A17;
+  --card: #26231F;
+  --card-soft: #221F1B;
+  --text: #EDE7DC;
+  --text-secondary: #97908A;
+  --text-muted: #6E6962;
+  --divider: #322E29;
+  --border: #322E29;
+}
+@layer components {
+.dark .paper,
+html.dark .paper {
+  background: #26231F;
+  border-color: #322E29;
+}
+.dark .paper-soft,
+html.dark .paper-soft {
+  background: #221F1B;
+  border-color: #322E29;
+}
+.dark .field,
+html.dark .field {
+  background: #221F1B;
+  border-color: #322E29;
+  color: #EDE7DC;
+}
+.dark .chip,
+html.dark .chip {
+  background: #221F1B;
+  border-color: #322E29;
+  color: #97908A;
+}
+.dark .chip[data-active="true"],
+html.dark .chip[data-active="true"] {
+  background: #EDE7DC;
+  color: #1C1A17;
+  border-color: #EDE7DC;
+}
+.dark .btn-primary,
+html.dark .btn-primary {
+  background: #EDE7DC;
+  color: #1C1A17;
+}
+.dark .btn-secondary,
+html.dark .btn-secondary {
+  background: #221F1B;
+  border-color: #322E29;
+  color: #EDE7DC;
+}
+.dark .nav-glass,
+html.dark .nav-glass {
+  background: rgba(28, 26, 23, 0.88);
+  border-top-color: #322E29;
+}
+.dark ::selection,
+html.dark ::selection {
+  background: rgba(207, 176, 109, 0.25);
+}
+} /* end @layer components */
