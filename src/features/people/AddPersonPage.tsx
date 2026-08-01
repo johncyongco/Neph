@@ -8,7 +8,7 @@ import { Input, Textarea, Select } from "@/components/ui/Input";
 import { Chip } from "@/components/ui/Chip";
 import { PhotoPicker } from "@/components/person/PhotoPicker";
 import { usePeopleStore } from "@/store/usePeopleStore";
-import { detectPlatform, harvestProfile } from "@/services/harvest";
+import { detectPlatform, extractUsername, harvestProfile } from "@/services/harvest";
 import { JOURNEY_TYPES, PLATFORM_META } from "@/lib/constants";
 import type { HarvestResult, JourneyType, Platform } from "@/lib/types";
 import { cn } from "@/lib/tw";
@@ -27,6 +27,7 @@ export default function AddPersonPage() {
   const addPerson = usePeopleStore((s) => s.addPerson);
   const people = usePeopleStore((s) => s.people);
   const [toast, setToast] = useState<null | "saved" | "duplicate">(null);
+  const [saving, setSaving] = useState(false);
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [harvest, setHarvest] = useState<HarvestResult | null>(null);
@@ -57,19 +58,41 @@ export default function AddPersonPage() {
   }, [toast]);
 
   async function onHarvest() {
-    if (!url.trim()) return;
+    const u = url.trim();
+    if (!u) return;
     setLoading(true);
+    const platform = detectPlatform(u);
+    const username = extractUsername(u) ?? "";
+
+    // Show the form immediately and prefill from the handle, so the user can
+    // save even if the network fetch hangs. Metadata arrives in the background
+    // and fills in whatever is still empty.
+    setHarvest({
+      platform,
+      username: username || undefined,
+      name: username || undefined,
+      profileUrl: u,
+      recentLinks: [],
+      manual: true,
+    });
+    setShowForm(true);
+    if (username && !name.trim()) setName(username);
+    if (username) setUsername(username);
+
     try {
-      const res = await harvestProfile(url);
+      const res = await harvestProfile(u);
       setHarvest(res);
-      setShowForm(true);
-      if (res.name) setName(res.name);
       if (res.username) setUsername(res.username);
-      if (res.bio) setBio(res.bio);
-      if (res.website) setWebsite(res.website);
-      if (res.platform && res.platform !== "unknown") {
-        // platform field stored on save
+      if (res.name) {
+        // Replace the handle-prefill with the real name unless the user
+        // already typed something of their own.
+        setName((prev) => {
+          const trimmed = prev.trim();
+          return trimmed && trimmed !== username ? prev : res.name!;
+        });
       }
+      if (res.bio) setBio((prev) => prev || res.bio!);
+      if (res.website) setWebsite((prev) => prev || res.website!);
     } finally {
       setLoading(false);
     }
@@ -82,7 +105,8 @@ export default function AddPersonPage() {
   }
 
   function save() {
-    if (!name.trim()) return;
+    if (!name.trim() || saving) return;
+    setSaving(true);
     const trimmedName = name.trim();
     const platform = harvest?.platform ?? detected ?? "unknown";
     const profileUrl = url.trim() || harvest?.profileUrl || undefined;
@@ -95,6 +119,7 @@ export default function AddPersonPage() {
     );
 
     if (isDuplicate) {
+      setSaving(false);
       setToast("duplicate");
       return;
     }
@@ -307,8 +332,12 @@ export default function AddPersonPage() {
               <Button variant="ghost" onClick={() => navigate(-1)} className="flex-1">
                 Cancel
               </Button>
-              <Button onClick={save} disabled={!name.trim()} className="flex-[2]">
-                Save People
+              <Button
+                onClick={save}
+                disabled={!name.trim() || saving}
+                className="flex-[2]"
+              >
+                {saving ? <Loader2 size={16} className="animate-spin" /> : "Save People"}
               </Button>
             </div>
           </div>

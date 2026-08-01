@@ -4,6 +4,10 @@ import type { HarvestResult, Platform, RecentLink } from "@/lib/types";
 // in a .env file to raise limits. Without a key the free tier still works.
 const MICROLINK_KEY = import.meta.env.VITE_MICROLINK_KEY as string | undefined;
 
+// Abort the harvest fetch after this long so "Detect" can never hang and
+// leave the user unable to save — we'd rather fall back to a manual scaffold.
+const HARVEST_TIMEOUT_MS = 8000;
+
 // Brand names Microlink returns as the page <title> when a profile is hidden
 // behind an auth wall — scraping produced the marketing site, not a person.
 const GENERIC_BRAND_NAMES = new Set([
@@ -22,6 +26,40 @@ const GENERIC_BRAND_NAMES = new Set([
   "pinterest",
   "tumblr",
 ]);
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Junk titles look like "Threads • Log in", "Instagram", "Explore the things
+// you love." — a brand name followed by separators/marketing, NOT a person.
+// "x" is kept out of the pattern because it's a single letter and too greedy.
+const GENERIC_BRAND_PATTERN = new RegExp(
+  `^(?:${[...GENERIC_BRAND_NAMES]
+    .filter((n) => n !== "x")
+    .map(escapeRegExp)
+    .join("|")})(?:\\s|\\b|[•·|—–])`,
+  "i"
+);
+
+function isGenericBrandTitle(title: string): boolean {
+  if (!title) return false;
+  const t = title.toLowerCase().trim();
+  return GENERIC_BRAND_NAMES.has(t) || GENERIC_BRAND_PATTERN.test(t);
+}
+
+// "NASA (@nasa) • Threads, Say more" → "NASA"; drop the platform suffix and
+// the trailing handle so a real profile title becomes a person's name.
+function cleanTitle(title: string): string | undefined {
+  if (!title) return undefined;
+  const cleaned = title
+    .replace(/[•·|].*$/s, "")
+    .replace(/\s*\(@[^)]*\)\s*$/s, "")
+    .replace(/\bthreads\b.*$/i, "")
+    .replace(/[–—-]+\s*(log\s*in|explore|sign\s*up).*$/i, "")
+    .trim();
+  return cleaned.length > 0 ? cleaned : undefined;
+}
 
 export function detectPlatform(url: string): Platform {
   const u = url.trim().toLowerCase();
@@ -43,7 +81,7 @@ export function detectPlatform(url: string): Platform {
   return "unknown";
 }
 
-function extractUsername(url: string): string | undefined {
+export function extractUsername(url: string): string | undefined {
   try {
     const u = new URL(url.startsWith("http") ? url : `https://${url}`);
     const parts = u.pathname.split("/").filter(Boolean);
@@ -67,12 +105,15 @@ interface MicrolinkResponse {
 }
 
 async function viaMicrolink(url: string): Promise<Partial<HarvestResult> | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), HARVEST_TIMEOUT_MS);
   try {
     const endpoint = new URL("https://api.microlink.io/");
     endpoint.searchParams.set("url", url);
     if (MICROLINK_KEY) endpoint.searchParams.set("apiKey", MICROLINK_KEY);
     const res = await fetch(endpoint.toString(), {
       headers: { Accept: "application/json" },
+      signal: controller.signal,
     });
     if (!res.ok) return null;
     const j = (await res.json()) as MicrolinkResponse;
@@ -81,26 +122,27 @@ async function viaMicrolink(url: string): Promise<Partial<HarvestResult> | null>
 
     // Reject generic site metadata — when a platform hides a profile behind
     // auth, Microlink falls back to the site's branding ("Facebook",
-    // "Instagram", …, "Explore the things you love."). That junk is worse
-    // than nothing, so we drop it and let the caller use the manual form.
-    const title = (d.title || "").trim().toLowerCase();
-    const isGenericBrand =
-      title !== "" && GENERIC_BRAND_NAMES.has(title);
+    // "Instagram", "Threads • Log in", …). That junk is worse than nothing,
+    // so we drop it and let the caller use the manual form.
+    const rawTitle = d.title || d.author || "";
+    if (isGenericBrandTitle(rawTitle)) return null;
+
+    const title = cleanTitle(rawTitle);
     const website =
       d.url && d.url !== url && !/\/(login|signup|signin)\b/i.test(d.url)
         ? d.url
         : undefined;
 
-    if (isGenericBrand) return null;
-
     return {
-      name: d.title || d.author || undefined,
+      name: title,
       bio: d.description || undefined,
       avatar: d.image?.url || d.logo?.url || undefined,
       website,
     };
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
